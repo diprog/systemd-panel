@@ -133,24 +133,38 @@ function serviceCardHTML(s) {
 
       <div class="pt-2 flex flex-wrap items-center gap-2">
         <div class="flex items-center gap-2 flex-1 min-w-0">
-          <button data-action="start" data-unit="${s.unit}" class="shrink-0 px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
-            ${icon("play", 14)}<span>Старт</span>
+          <button
+            data-action="start" data-unit="${s.unit}"
+            class="shrink-0 h-9 w-9 grid place-items-center rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition"
+            aria-label="Старт" title="Старт">
+            ${icon("play", 16)}
           </button>
-          <button data-action="stop" data-unit="${s.unit}" class="shrink-0 px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
-            ${icon("stop", 14)}<span>Стоп</span>
+
+          <button
+            data-action="stop" data-unit="${s.unit}"
+            class="shrink-0 h-9 w-9 grid place-items-center rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition"
+            aria-label="Стоп" title="Стоп">
+            ${icon("stop", 16)}
           </button>
-          <button data-action="restart" data-unit="${s.unit}" class="shrink-0 px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
-            ${icon("restart", 14)}<span>Рестарт</span>
+
+          <button
+            data-action="restart" data-unit="${s.unit}"
+            class="shrink-0 h-9 w-9 grid place-items-center rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition"
+            aria-label="Рестарт" title="Рестарт">
+            ${icon("restart", 16)}
           </button>
         </div>
 
-        <button data-action="logs" data-unit="${s.unit}" class="ms-auto shrink-0 px-3 py-1.5 rounded-xl bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 shadow-soft transition inline-flex items-center gap-2">
+        <button
+          data-action="logs" data-unit="${s.unit}"
+          class="ms-auto shrink-0 px-3 py-1.5 rounded-xl bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 shadow-soft transition inline-flex items-center gap-2">
           ${icon("logs", 14)}<span>Логи</span>
         </button>
       </div>
     </div>
   `;
 }
+
 function skeletonCardHTML() {
   return `
     <div class="rounded-3xl ring-1 ring-black/5 dark:ring-white/5 bg-white/60 dark:bg-neutral-900/50 backdrop-blur-xl p-3 shadow-soft animate-pulse">
