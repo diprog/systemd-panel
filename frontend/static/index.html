@@ -3,19 +3,48 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>systemd-panel</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.7/dist/tailwind.min.css" />
+  <title>systemd‑panel</title>
+
+  <!-- Preconnect for faster CDN loading -->
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+
+  <!-- Tailwind CSS 4.x Play CDN script with forms/typography plugins for better form UI -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography" defer></script>
+
+  <!-- Optional: inline tailwind.config override if needed -->
+  <script>
+  // Tailwind 4 can be tweaked via JS object BEFORE the JIT engine runs
+  window.tailwind = window.tailwind || {};
+  window.tailwind.config = {
+    darkMode: 'media',               // 'media' is default, can change to 'class' if needed
+    corePlugins: { preflight: true },// optionally disable base reset
+    theme: {
+      extend: {
+        // custom colors or spacing tokens if needed
+        // colors: { customBlue: '#1E40AF' }
+      }
+    }
+  };
+  </script>
+
+  <!-- Your custom tiny CSS override (dark-mode toggle via `prefers-color-scheme`) -->
   <link rel="stylesheet" href="/static/style.css" />
-  <meta name="color-scheme" content="dark light" />
 </head>
 <body class="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 min-h-screen">
   <div id="app" class="p-4 max-w-4xl mx-auto">
     <!-- login -->
-    <form id="login-form" class="flex flex-col gap-4 max-w-xs mx-auto mt-20" autocomplete="on">
+    <form id="login-form"
+          class="flex flex-col gap-4 max-w-xs mx-auto mt-20"
+          autocomplete="on">
       <h1 class="text-3xl font-bold text-center">Login</h1>
-      <input id="token" type="password" placeholder="Token" autocomplete="current-password"
-             class="border rounded px-3 py-2 dark:bg-neutral-800 dark:border-neutral-600" />
-      <button class="bg-blue-600 text-white rounded py-2">Enter</button>
+      <input id="token"
+             type="password"
+             placeholder="Token"
+             autocomplete="current-password"
+             class="border rounded px-3 py-2 dark:bg-neutral-800 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+      <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white rounded py-2 disabled:opacity-50 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              disabled>Enter</button>
       <p id="login-error" class="text-red-500 text-center hidden">Invalid token</p>
     </form>
 
@@ -38,6 +67,8 @@
       </div>
     </div>
   </div>
+
+  <!-- bind your logic at the end for better SSR/CSR -->
   <script type="module" src="/static/app.js"></script>
 </body>
 </html>
