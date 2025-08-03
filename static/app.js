@@ -136,7 +136,7 @@ function closeLogs() {
 window.addEventListener("DOMContentLoaded", () => {
   $("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const token = $("#token-input").value;
+    const token = $("#token-input").value.trim();
     $("#login-error").classList.add("hidden");
     try {
       const ok = await doLogin(token);
