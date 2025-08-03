@@ -115,38 +115,42 @@ function statePill(state, sub) {
   else if (state === "failed") tone = "bg-rose-600 text-white";
   else if (state === "activating") tone = "bg-amber-500 text-white";
   else if (state === "deactivating") tone = "bg-yellow-500 text-white";
-  return `<span class="px-2 py-0.5 rounded-full text-[11px] ${tone}">${state}${sub ? " · " + sub : ""}</span>`;
+  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] whitespace-nowrap ${tone}">
+            ${state}${sub ? " · " + sub : ""}
+          </span>`;
 }
-
 function serviceCardHTML(s) {
   const desc = s.description || "—";
   return `
-    <div class="rounded-3xl ring-1 ring-black/5 dark:ring-white/5 bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl p-3 shadow-soft transition hover:-translate-y-0.5">
+    <div class="rounded-3xl ring-1 ring-black/5 dark:ring-white/5 bg-white/70 dark:bg-neutral-900/60 backdrop-blur-xl p-3 shadow-soft transition hover:-translate-y-0.5 overflow-hidden">
       <div class="flex items-start justify-between gap-2">
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <div class="font-mono text-[13px] truncate" title="${s.unit}">${s.unit}</div>
           <div class="text-sm text-gray-600 dark:text-neutral-400 truncate" title="${desc}">${desc}</div>
         </div>
-        <div>${statePill(s.active_state, s.sub_state)}</div>
+        <div class="shrink-0">${statePill(s.active_state, s.sub_state)}</div>
       </div>
-      <div class="flex items-center gap-2 pt-2">
-        <button data-action="start" data-unit="${s.unit}" class="px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
-          ${icon("play", 14)}<span>Старт</span>
-        </button>
-        <button data-action="stop" data-unit="${s.unit}" class="px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
-          ${icon("stop", 14)}<span>Стоп</span>
-        </button>
-        <button data-action="restart" data-unit="${s.unit}" class="px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
-          ${icon("restart", 14)}<span>Рестарт</span>
-        </button>
-        <button data-action="logs" data-unit="${s.unit}" class="ml-auto px-3 py-1.5 rounded-xl bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 shadow-soft transition inline-flex items-center gap-2">
+
+      <div class="pt-2 flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <button data-action="start" data-unit="${s.unit}" class="shrink-0 px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
+            ${icon("play", 14)}<span>Старт</span>
+          </button>
+          <button data-action="stop" data-unit="${s.unit}" class="shrink-0 px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
+            ${icon("stop", 14)}<span>Стоп</span>
+          </button>
+          <button data-action="restart" data-unit="${s.unit}" class="shrink-0 px-3 py-1.5 rounded-xl ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition inline-flex items-center gap-2">
+            ${icon("restart", 14)}<span>Рестарт</span>
+          </button>
+        </div>
+
+        <button data-action="logs" data-unit="${s.unit}" class="ms-auto shrink-0 px-3 py-1.5 rounded-xl bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 shadow-soft transition inline-flex items-center gap-2">
           ${icon("logs", 14)}<span>Логи</span>
         </button>
       </div>
     </div>
   `;
 }
-
 function skeletonCardHTML() {
   return `
     <div class="rounded-3xl ring-1 ring-black/5 dark:ring-white/5 bg-white/60 dark:bg-neutral-900/50 backdrop-blur-xl p-3 shadow-soft animate-pulse">
