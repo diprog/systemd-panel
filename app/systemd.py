@@ -1,5 +1,4 @@
 import asyncio
-import os
 from pathlib import Path
 
 
@@ -30,7 +29,10 @@ def _read_description(unit_path: str) -> str:
 
 def discover_units(service_dir: str) -> dict:
     """
-    Discover .service units only within a given directory (recursively).
+    Discover only admin-owned .service units placed directly in service_dir.
+
+    The scan is non-recursive and ignores symlinks and subdirectories, so
+    units pulled in via *.wants/ etc. are not included.
 
     :param service_dir: Base directory to scan, typically /etc/systemd/system.
 
@@ -40,10 +42,13 @@ def discover_units(service_dir: str) -> dict:
     base = Path(service_dir)
     if not base.is_dir():
         return result
-    for p in base.rglob("*.service"):
-        if p.is_dir():
+
+    for p in base.glob("*.service"):
+        try:
+            if p.parent == base and p.is_file() and not p.is_symlink():
+                result[p.name] = str(p)
+        except Exception:
             continue
-        result[p.name] = str(p)
     return result
 
 
