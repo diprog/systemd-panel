@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>systemd-panel</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.7/dist/tailwind.min.css" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <meta name="color-scheme" content="dark light" />
+</head>
+<body class="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 min-h-screen">
+  <div id="app" class="p-4 max-w-4xl mx-auto">
+    <!-- login -->
+    <form id="login-form" class="flex flex-col gap-4 max-w-xs mx-auto mt-20" autocomplete="on">
+      <h1 class="text-3xl font-bold text-center">Login</h1>
+      <input id="token" type="password" placeholder="Token" autocomplete="current-password"
+             class="border rounded px-3 py-2 dark:bg-neutral-800 dark:border-neutral-600" />
+      <button class="bg-blue-600 text-white rounded py-2">Enter</button>
+      <p id="login-error" class="text-red-500 text-center hidden">Invalid token</p>
+    </form>
+
+    <!-- main -->
+    <div id="main" class="hidden">
+      <h1 class="text-2xl font-bold mb-4">Services</h1>
+      <div id="service-list" class="flex flex-col gap-4"></div>
+    </div>
+
+    <!-- log viewer modal -->
+    <div id="log-modal"
+         class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4">
+      <div class="bg-white dark:bg-neutral-800 rounded w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <header class="flex justify-between p-3 border-b dark:border-neutral-600">
+          <h2 id="log-title" class="font-bold"></h2>
+          <button id="close-log" class="text-xl">&times;</button>
+        </header>
+        <pre id="log-content"
+             class="flex-1 overflow-auto p-3 text-sm bg-neutral-100 dark:bg-neutral-900"></pre>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

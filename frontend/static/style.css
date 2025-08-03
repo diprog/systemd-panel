@@ -1,0 +1,4 @@
+/* tiny dark-mode toggle via user preference */
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; }
+}
