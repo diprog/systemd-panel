@@ -40,11 +40,11 @@ async function postJSON(url, body) {
 
 // --------------------- UI helpers -----------------------
 function badge(state, sub) {
-  let color = "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100";
-  if (state === "active" && sub === "running") color = "bg-green-600 text-white";
-  else if (state === "failed") color = "bg-red-600 text-white";
-  else if (state === "activating") color = "bg-blue-600 text-white";
-  else if (state === "deactivating") color = "bg-yellow-500 text-white";
+  let color = "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100";
+  if (state === "active" && sub === "running") color = "bg-emerald-600 text-white";
+  else if (state === "failed") color = "bg-rose-600 text-white";
+  else if (state === "activating") color = "bg-amber-500 text-white";
+  else if (state === "deactivating") color = "bg-yellow-400 text-black";
   return `<span class="px-2 py-0.5 rounded-lg text-xs ${color}">${state}${sub ? " · " + sub : ""}</span>`;
 }
 
