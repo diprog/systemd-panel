@@ -1,102 +1,113 @@
 <!doctype html>
 <html lang="ru" class="h-full">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="color-scheme" content="dark light" />
+<head>
+    <link rel="icon" type="image/png" href="/icons/favicon-96x96.png" sizes="96x96"/>
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg"/>
+    <link rel="shortcut icon" href="/icons/favicon.ico"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png"/>
+    <link rel="manifest" href="/icons/site.webmanifest"/>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+    <meta name="color-scheme" content="dark light"/>
     <title>Systemd Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Dark по системной теме; лёгкий тёплый тюнинг цветов
-      tailwind.config = {
-        darkMode: "media",
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                50: "#fff7ed",
-                100: "#ffedd5",
-                200: "#fed7aa",
-                300: "#fdba74",
-                400: "#fb923c",
-                500: "#f97316", // основной тёплый акцент
-                600: "#ea580c",
-                700: "#c2410c",
-                800: "#9a3412",
-                900: "#7c2d12"
-              }
-            },
-            boxShadow: {
-              soft: "0 10px 30px -12px rgba(10,10,10,.15), 0 6px 16px -8px rgba(10,10,10,.12)"
+        // Dark по системной теме; лёгкий тёплый тюнинг цветов
+        tailwind.config = {
+            darkMode: "media",
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: "#fff7ed",
+                            100: "#ffedd5",
+                            200: "#fed7aa",
+                            300: "#fdba74",
+                            400: "#fb923c",
+                            500: "#f97316", // основной тёплый акцент
+                            600: "#ea580c",
+                            700: "#c2410c",
+                            800: "#9a3412",
+                            900: "#7c2d12"
+                        }
+                    },
+                    boxShadow: {
+                        soft: "0 10px 30px -12px rgba(10,10,10,.15), 0 6px 16px -8px rgba(10,10,10,.12)"
+                    }
+                }
             }
-          }
         }
-      }
     </script>
-  </head>
+</head>
 
-  <body class="h-full bg-[#faf7f4] text-gray-900 dark:bg-neutral-950 dark:text-neutral-100 selection:bg-brand-200 selection:text-gray-900">
-    <!-- Декоративный фон -->
-    <div class="pointer-events-none fixed inset-0 -z-10">
-      <div class="absolute inset-0 opacity-70 dark:opacity-60 [background:radial-gradient(70%_50%_at_10%_0%,rgba(249,115,22,.20),transparent_60%),radial-gradient(70%_50%_at_90%_0%,rgba(244,114,182,.18),transparent_60%),radial-gradient(70%_50%_at_50%_100%,rgba(14,165,233,.16),transparent_60%)]"></div>
-      <div class="absolute inset-0 [mask-image:radial-gradient(1500px_600px_at_50%_-50%,#000_35%,transparent)] bg-white/50 dark:bg-neutral-900/30"></div>
-    </div>
+<body class="h-full bg-[#faf7f4] text-gray-900 dark:bg-neutral-950 dark:text-neutral-100 selection:bg-brand-200 selection:text-gray-900">
+<!-- Декоративный фон -->
+<div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute inset-0 opacity-70 dark:opacity-60 [background:radial-gradient(70%_50%_at_10%_0%,rgba(249,115,22,.20),transparent_60%),radial-gradient(70%_50%_at_90%_0%,rgba(244,114,182,.18),transparent_60%),radial-gradient(70%_50%_at_50%_100%,rgba(14,165,233,.16),transparent_60%)]"></div>
+    <div class="absolute inset-0 [mask-image:radial-gradient(1500px_600px_at_50%_-50%,#000_35%,transparent)] bg-white/50 dark:bg-neutral-900/30"></div>
+</div>
 
-    <div id="app" class="min-h-full">
-      <!-- Login -->
-      <section id="login-view" class="max-w-md mx-auto pt-20 px-4">
+<div id="app" class="min-h-full">
+    <!-- Login -->
+    <section id="login-view" class="max-w-md mx-auto pt-20 px-4">
         <div class="rounded-3xl shadow-soft ring-1 ring-black/5 dark:ring-white/5 bg-white/65 dark:bg-neutral-900/60 backdrop-blur-xl p-6">
-          <h1 class="text-2xl font-semibold tracking-tight">Вход</h1>
-          <p class="text-sm text-gray-600 dark:text-neutral-400 mt-1 mb-6">Введите токен доступа.</p>
+            <h1 class="text-2xl font-semibold tracking-tight">Вход</h1>
+            <p class="text-sm text-gray-600 dark:text-neutral-400 mt-1 mb-6">Введите токен доступа.</p>
 
-          <form id="login-form" autocomplete="on" class="space-y-4">
-            <label class="block">
-              <span class="text-sm">Токен</span>
-              <input
-                id="token-input"
-                name="password"
-                autocomplete="current-password"
-                type="password"
-                class="mt-1 w-full rounded-2xl border-0 ring-1 ring-black/10 dark:ring-white/10 bg-white/80 dark:bg-neutral-900/80 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/70 placeholder:text-gray-400"
-                placeholder="••••••••••••••••"
-                required
-              />
-            </label>
+            <form id="login-form" autocomplete="on" class="space-y-4">
+                <label class="block">
+                    <span class="text-sm">Токен</span>
+                    <input
+                            id="token-input"
+                            name="password"
+                            autocomplete="current-password"
+                            type="password"
+                            class="mt-1 w-full rounded-2xl border-0 ring-1 ring-black/10 dark:ring-white/10 bg-white/80 dark:bg-neutral-900/80 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/70 placeholder:text-gray-400"
+                            placeholder="••••••••••••••••"
+                            required
+                    />
+                </label>
 
-            <button
-              type="submit"
-              class="w-full rounded-2xl px-4 py-2.5 font-medium bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white shadow-soft transition-transform duration-150 active:scale-[.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500/70 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950"
-            >
-              Войти
-            </button>
-            <p id="login-error" class="text-sm text-rose-600 hidden">Неверный токен.</p>
-          </form>
+                <button
+                        type="submit"
+                        class="w-full rounded-2xl px-4 py-2.5 font-medium bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white shadow-soft transition-transform duration-150 active:scale-[.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500/70 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950"
+                >
+                    Войти
+                </button>
+                <p id="login-error" class="text-sm text-rose-600 hidden">Неверный токен.</p>
+            </form>
         </div>
-      </section>
+    </section>
 
-      <!-- Main -->
-      <section id="main-view" class="hidden px-4 py-6 max-w-6xl mx-auto">
+    <!-- Main -->
+    <section id="main-view" class="hidden px-4 py-6 max-w-6xl mx-auto">
         <header class="flex items-center justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
-            <div class="h-9 w-9 rounded-2xl bg-brand-500/90 text-white grid place-items-center shadow-soft">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c4.97 0 9 4.03 9 9 0 3.88-2.46 7.18-5.9 8.44-.39.14-.65.51-.65.92V22h-4v-1.64c0-.41-.26-.78-.65-.92C5.46 18.18 3 14.88 3 11c0-4.97 4.03-9 9-9zm0 4a1 1 0 0 0-1 1v7.59l-2.3-2.29a1 1 0 1 0-1.4 1.42l4 4a1 1 0 0 0 1.4 0l4-4a1 1 0 1 0-1.4-1.42L13 14.59V7a1 1 0 0 0-1-1z"/></svg>
+            <div class="flex items-center gap-3">
+                <div class="h-9 w-9 rounded-2xl bg-brand-500/90 text-white grid place-items-center shadow-soft">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2c4.97 0 9 4.03 9 9 0 3.88-2.46 7.18-5.9 8.44-.39.14-.65.51-.65.92V22h-4v-1.64c0-.41-.26-.78-.65-.92C5.46 18.18 3 14.88 3 11c0-4.97 4.03-9 9-9zm0 4a1 1 0 0 0-1 1v7.59l-2.3-2.29a1 1 0 1 0-1.4 1.42l4 4a1 1 0 0 0 1.4 0l4-4a1 1 0 1 0-1.4-1.42L13 14.59V7a1 1 0 0 0-1-1z"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold tracking-tight">Сервисы systemd</h2>
             </div>
-            <h2 class="text-xl font-semibold tracking-tight">Сервисы systemd</h2>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="refresh-btn" class="rounded-2xl px-3 py-2 ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 shadow-soft transition">
+            <div class="flex items-center gap-2">
+                <button id="refresh-btn"
+                        class="rounded-2xl px-3 py-2 ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 shadow-soft transition">
               <span class="inline-flex items-center gap-2">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-8.66 3.54 1 1 0 1 0-1.41 1.41A7 7 0 0 0 19 13c0-3.86-3.14-7-7-7z"/></svg>
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path
+                        d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 0 1-8.66 3.54 1 1 0 1 0-1.41 1.41A7 7 0 0 0 19 13c0-3.86-3.14-7-7-7z"/></svg>
                 Обновить
               </span>
-            </button>
-            <button id="logout-btn" class="rounded-2xl px-3 py-2 ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 shadow-soft transition">
+                </button>
+                <button id="logout-btn"
+                        class="rounded-2xl px-3 py-2 ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 shadow-soft transition">
               <span class="inline-flex items-center gap-2">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17a1 1 0 0 0 0 2h8a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3h-8a1 1 0 1 0 0 2h8a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-8zM7.7 8.3a1 1 0 0 0-1.4 1.4L7.59 11H3a1 1 0 1 0 0 2h4.59L6.3 14.3a1 1 0 1 0 1.4 1.4l3-3a1 1 0 0 0 0-1.4l-3-3z"/></svg>
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path
+                        d="M10 17a1 1 0 0 0 0 2h8a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3h-8a1 1 0 1 0 0 2h8a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-8zM7.7 8.3a1 1 0 0 0-1.4 1.4L7.59 11H3a1 1 0 1 0 0 2h4.59L6.3 14.3a1 1 0 1 0 1.4 1.4l3-3a1 1 0 0 0 0-1.4l-3-3z"/></svg>
                 Выйти
               </span>
-            </button>
-          </div>
+                </button>
+            </div>
         </header>
 
         <!-- Скелетоны и список -->
@@ -104,25 +115,28 @@
 
         <!-- Logs drawer -->
         <div id="logs" class="hidden fixed inset-0 z-50">
-          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200 opacity-0" id="logs-backdrop"></div>
-          <div class="relative max-w-5xl mx-auto mt-8 md:mt-16 h-[85vh]">
-            <div id="logs-panel" class="opacity-0 translate-y-3 transition-all duration-200 rounded-3xl shadow-soft ring-1 ring-black/5 dark:ring-white/5 bg-white dark:bg-neutral-950 h-full flex flex-col">
-              <div class="flex items-center justify-between px-4 py-3 border-b border-black/10 dark:border-white/10">
-                <h3 id="logs-title" class="font-semibold">Логи</h3>
-                <button id="logs-close" class="rounded-xl px-3 py-1.5 ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition">
-                  Закрыть
-                </button>
-              </div>
-              <pre id="logs-pre" class="flex-1 overflow-auto p-4 text-sm whitespace-pre-wrap font-mono"></pre>
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200 opacity-0"
+                 id="logs-backdrop"></div>
+            <div class="relative max-w-5xl mx-auto mt-8 md:mt-16 h-[85vh]">
+                <div id="logs-panel"
+                     class="opacity-0 translate-y-3 transition-all duration-200 rounded-3xl shadow-soft ring-1 ring-black/5 dark:ring-white/5 bg-white dark:bg-neutral-950 h-full flex flex-col">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-black/10 dark:border-white/10">
+                        <h3 id="logs-title" class="font-semibold">Логи</h3>
+                        <button id="logs-close"
+                                class="rounded-xl px-3 py-1.5 ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-neutral-900/70 hover:bg-white/90 dark:hover:bg-neutral-900/90 transition">
+                            Закрыть
+                        </button>
+                    </div>
+                    <pre id="logs-pre" class="flex-1 overflow-auto p-4 text-sm whitespace-pre-wrap font-mono"></pre>
+                </div>
             </div>
-          </div>
         </div>
-      </section>
-    </div>
+    </section>
+</div>
 
-    <!-- Toasts -->
-    <div id="toast-root" class="fixed top-4 right-4 z-[60] space-y-2"></div>
+<!-- Toasts -->
+<div id="toast-root" class="fixed top-4 right-4 z-[60] space-y-2"></div>
 
-    <script src="/assets/app.js" defer></script>
-  </body>
+<script src="/assets/app.js" defer></script>
+</body>
 </html>
