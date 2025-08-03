@@ -135,18 +135,20 @@ function closeLogs() {
 // --------------------- Events ---------------------------
 window.addEventListener("DOMContentLoaded", () => {
   $("#login-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const token = $("#token-input").value.trim();
-    $("#login-error").classList.add("hidden");
-    try {
-      const ok = await doLogin(token);
-      if (!ok) throw new Error("bad token");
-      switchView(true);
-      await initAfterLogin();
-    } catch {
-      $("#login-error").classList.remove("hidden");
-    }
-  });
+  e.preventDefault();
+  const token = $("#token-input").value.trim();
+  $("#login-error").classList.add("hidden");
+
+  try {
+    const ok = await doLogin(token);
+    if (!ok) throw new Error("bad token");
+    switchView(true);
+    await initAfterLogin();
+  } catch (e) {
+    console.error("Login error:", e);
+    $("#login-error").classList.remove("hidden");
+  }
+});
 
   $("#logout-btn").addEventListener("click", async () => {
     try {
