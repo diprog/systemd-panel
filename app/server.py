@@ -58,6 +58,18 @@ async def app(scope, receive, send):
     cookies = get_cookies(headers)
 
     # ---------- Static ----------
+    if method == "GET" and path.startswith("/icons/"):
+        icon_path = STATIC_DIR / path.lstrip("/")
+        if icon_path.is_file():
+            ext = icon_path.suffix.lower()
+            content_type = {
+                ".png": "image/png",
+                ".svg": "image/svg+xml",
+                ".ico": "image/x-icon",
+                ".webmanifest": "application/manifest+json",
+            }.get(ext, "application/octet-stream")
+            return await _serve_file(send, icon_path, content_type)
+        return await send_json(send, 404, {"error": "not found"})
     if method == "GET" and path == "/":
         index_path = STATIC_DIR / "index.html"
         return await _serve_file(send, index_path, "text/html; charset=utf-8")
