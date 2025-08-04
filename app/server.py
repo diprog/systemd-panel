@@ -1,10 +1,11 @@
+import asyncio
 import os
 from pathlib import Path
 
 from .config import CONFIG
 from .auth import Auth
 from .http import lower_headers, get_cookies, send_json, read_json, query_params
-from .sse import start_sse, send_sse, end_sse
+from .sse import send_comment, start_sse, send_sse, end_sse
 from . import systemd as sysd
 
 # Single Auth/Sessions holder
@@ -154,10 +155,46 @@ async def app(scope, receive, send):
         output = "cat" if mode == "cat" else "short-iso"
 
         await start_sse(send)
-        try:
+        # Meta to let the client know the stream is ready.
+        await send_sse(send, {"ready": True, "unit": unit, "mode": output}, event="meta")
+
+        async def heartbeats():
+            """
+            Periodic comment frames to keep intermediaries from buffering/closing.
+            """
+            try:
+                while True:
+                    await asyncio.sleep(15)
+                    await send_comment(send, "hb")
+            except asyncio.CancelledError:
+                return
+
+        async def pump_logs():
+            """
+            Pipe journalctl lines to SSE 'log' events.
+            """
             async for line in sysd.journal_stream(unit, lines, output=output):
                 await send_sse(send, {"line": line}, event="log")
+
+        hb_task = asyncio.create_task(heartbeats())
+        try:
+            await pump_logs()
+        except asyncio.CancelledError:
+            # Client disconnected
+            pass
+        except Exception as e:
+            # Bubble one error event then close the stream
+            msg = str(e)[:300]
+            try:
+                await send_sse(send, {"message": msg}, event="meta")
+            except Exception:
+                pass
         finally:
+            hb_task.cancel()
+            try:
+                await hb_task
+            except Exception:
+                pass
             await end_sse(send)
         return
 

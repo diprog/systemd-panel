@@ -183,12 +183,10 @@ async def journal_stream(unit: str, lines: int = 200, output: str = "short-iso")
     )
     try:
         while True:
-            if proc.stdout.at_eof():
-                break
+            # Blocks until a line is available or EOF; no busy loop.
             line = await proc.stdout.readline()
             if not line:
-                await asyncio.sleep(0.05)
-                continue
+                break
             yield line.decode(errors="replace").rstrip("\n")
     finally:
         if proc.returncode is None:

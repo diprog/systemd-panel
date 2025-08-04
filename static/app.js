@@ -250,7 +250,7 @@ function openLogs(unit) {
     const backdrop = $("#logs-backdrop");
     const panel = $("#logs-panel");
     const pre = $("#logs-pre");
-    pre.textContent = "";
+    pre.textContent = "Жду новые записи…\n";
 
     root.classList.remove("hidden");
     requestAnimationFrame(() => {
@@ -258,7 +258,6 @@ function openLogs(unit) {
         panel.classList.remove("opacity-0", "translate-y-3");
     });
 
-    // ensure UI reflects current mode and start stream
     setLogsMode(currentLogMode);
     startLogStream();
 }
@@ -301,20 +300,50 @@ function startLogStream() {
     const pre = $("#logs-pre");
     if (!currentLogsUnit) return;
     if (logSource) logSource.close();
-    const url = `/api/logs?unit=${encodeURIComponent(currentLogsUnit)}&lines=200` +
-        (currentLogMode === "cat" ? "&mode=cat" : "");
+
+    const url = `/api/logs?unit=${encodeURIComponent(currentLogsUnit)}&lines=200`
+        + (currentLogMode === "cat" ? "&mode=cat" : "")
+        + `&t=${Date.now()}`;
+
     logSource = new EventSource(url, {withCredentials: true});
+
+    logSource.addEventListener("open", () => {
+        // Соединение установлено на уровне HTTP
+        // Оставляем плейсхолдер до первой строки/меты
+    });
+
+    logSource.addEventListener("meta", (e) => {
+        try {
+            const meta = JSON.parse(e.data);
+            if (meta.ready && pre && pre.textContent.startsWith("Жду новые записи")) {
+                pre.textContent = "";
+            }
+            if (meta.message) {
+                showToast(`Логи: ${meta.message}`, "error");
+            }
+        } catch {}
+    });
+
     logSource.addEventListener("log", (e) => {
         try {
             const {line} = JSON.parse(e.data);
+            if (pre && pre.textContent.startsWith("Жду новые записи")) pre.textContent = "";
             pre.textContent += line + "\n";
             pre.scrollTop = pre.scrollHeight;
-        } catch {
-        }
+        } catch {}
     });
+
     logSource.onerror = () => {
+        // Например, 401/404/проблемы сети — EventSource отдаёт только факт ошибки.
+        if (logSource) {
+            logSource.close();
+            logSource = null;
+        }
+        showToast("Не удалось подключиться к потоку логов", "error");
+        // Опционально: автоматическое повторное открытие не делаем — есть ручной ретрай.
     };
 }
+
 
 
 // --------------------- Events ---------------------------
