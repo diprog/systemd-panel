@@ -31,8 +31,7 @@ def discover_units(service_dir: str) -> dict:
     """
     Discover only admin-owned .service units placed directly in service_dir.
 
-    The scan is non-recursive and ignores symlinks and subdirectories, so
-    units pulled in via *.wants/ etc. are not included.
+    The scan is non-recursive and ignores symlinks and subdirectories.
 
     :param service_dir: Base directory to scan, typically /etc/systemd/system.
 
@@ -60,7 +59,9 @@ async def _run(*args: str) -> tuple[int, str, str]:
 
     :returns: (returncode, stdout, stderr).
     """
-    proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(
+        *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    )
     out, err = await proc.communicate()
     return proc.returncode, out.decode(errors="replace"), err.decode(errors="replace")
 
@@ -165,53 +166,11 @@ async def journal_stream(unit: str, lines: int = 200, output: str = "short-iso")
 
     :param unit: Unit name.
     :param lines: Number of backlog lines to include.
-    :param output: "short-iso" to keep systemd preface or "cat" to emit only MESSAGE.
+    :param output: journalctl output format, "short-iso" or "cat".
 
     :returns: Async iterator of single text lines.
     """
-    if output == "cat":
-        # Жёстко берём только MESSAGE через JSON, чтобы не получить префиксы формата.
-        proc = await asyncio.create_subprocess_exec(
-            "journalctl",
-            "-fu",
-            unit,
-            "-n",
-            str(lines),
-            "-o",
-            "json",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        try:
-            while True:
-                raw = await proc.stdout.readline()
-                if not raw:
-                    break
-                try:
-                    obj = json.loads(raw.decode(errors="replace"))
-                    msg = obj.get("MESSAGE", "")
-                except Exception:
-                    # Фоллбэк на случай странной строки — почти не должен срабатывать
-                    msg = raw.decode(errors="replace")
-                if msg:
-                    yield msg.rstrip("\n")
-        finally:
-            if proc.returncode is None:
-                try:
-                    proc.terminate()
-                except ProcessLookupError:
-                    pass
-                try:
-                    await asyncio.wait_for(proc.wait(), 2.0)
-                except Exception:
-                    try:
-                        proc.kill()
-                    except ProcessLookupError:
-                        pass
-        return
-
-    # Обычный путь: оставить короткую «шапку» от journalctl
-    fmt = "short-iso"
+    fmt = "cat" if output == "cat" else "short-iso"
     proc = await asyncio.create_subprocess_exec(
         "journalctl",
         "-fu",
@@ -244,14 +203,158 @@ async def journal_stream(unit: str, lines: int = 200, output: str = "short-iso")
                     pass
 
 
+# ---------- Realtime status pub/sub ----------
+
+class StatusBus:
+    """
+    In-process pub/sub that broadcasts service snapshots.
+
+    Produces snapshots on a timer and immediately when triggered.
+
+    :param service_dir: Directory to scan for units.
+    :param interval: Fallback tick interval (seconds).
+    """
+
+    def __init__(self, service_dir: str, interval: float = 1.5):
+        self._dir = service_dir
+        self._interval = interval
+        self._subs = set()
+        self._poke = asyncio.Event()
+        self._task = None
+
+    async def start(self) -> None:
+        """
+        Start the background producer task if not running.
+
+        :returns: None.
+        """
+        if self._task is None:
+            self._task = asyncio.create_task(self._run())
+
+    async def stop(self) -> None:
+        """
+        Stop the background task.
+
+        :returns: None.
+        """
+        if self._task:
+            self._task.cancel()
+            try:
+                await self._task
+            except Exception:
+                pass
+            self._task = None
+
+    async def _run(self) -> None:
+        """
+        Background loop that emits snapshots on tick or trigger.
+
+        :returns: None.
+        """
+        while True:
+            try:
+                await asyncio.wait_for(self._poke.wait(), timeout=self._interval)
+            except asyncio.TimeoutError:
+                pass
+            self._poke.clear()
+            snapshot = await services_snapshot(self._dir)
+            await self._broadcast(snapshot)
+
+    async def _broadcast(self, snapshot: list) -> None:
+        """
+        Send a snapshot to all subscribers (drop oldest if slow).
+
+        :param snapshot: Snapshot list.
+
+        :returns: None.
+        """
+        dead = []
+        for q in list(self._subs):
+            try:
+                if q.full():
+                    q.get_nowait()
+                q.put_nowait(snapshot)
+            except Exception:
+                dead.append(q)
+        for q in dead:
+            self._subs.discard(q)
+
+    def subscribe(self) -> asyncio.Queue:
+        """
+        Subscribe to snapshots.
+
+        :returns: Queue that receives snapshot lists.
+        """
+        q = asyncio.Queue(maxsize=1)
+        self._subs.add(q)
+        return q
+
+    def unsubscribe(self, q: asyncio.Queue) -> None:
+        """
+        Unsubscribe a queue.
+
+        :param q: Queue to remove.
+
+        :returns: None.
+        """
+        self._subs.discard(q)
+
+    def trigger(self) -> None:
+        """
+        Request an immediate snapshot broadcast.
+
+        :returns: None.
+        """
+        self._poke.set()
+
+
+_BUSES = {}  # service_dir -> StatusBus
+
+
+def _get_bus(service_dir: str) -> StatusBus:
+    """
+    Return a singleton StatusBus per service_dir, starting it if needed.
+
+    :param service_dir: Directory to scan.
+
+    :returns: StatusBus instance.
+    """
+    bus = _BUSES.get(service_dir)
+    if not bus:
+        bus = StatusBus(service_dir)
+        _BUSES[service_dir] = bus
+        # Safe to schedule when called from an async request handler.
+        asyncio.create_task(bus.start())
+    return bus
+
+
+def trigger_status_refresh(service_dir: str) -> None:
+    """
+    Trigger an immediate status refresh broadcast.
+
+    :param service_dir: Directory to scan.
+
+    :returns: None.
+    """
+    _get_bus(service_dir).trigger()
+
+
 async def status_stream(service_dir: str):
     """
-    Async generator that yields snapshots periodically.
+    Async generator that yields snapshots as they are produced.
+
+    Includes an initial snapshot, then pushes on timer or trigger.
 
     :param service_dir: Directory to scan.
 
     :returns: Async iterator of service lists.
     """
-    while True:
+    bus = _get_bus(service_dir)
+    q = bus.subscribe()
+    try:
         yield await services_snapshot(service_dir)
-        await asyncio.sleep(1.5)
+        while True:
+            snapshot = await q.get()
+            yield snapshot
+    finally:
+        bus.unsubscribe(q)

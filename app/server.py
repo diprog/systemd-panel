@@ -124,6 +124,7 @@ async def app(scope, receive, send):
             return await send_json(send, 400, {"ok": False, "error": "bad unit"})
         if not await sysd.is_allowed_unit(unit, CONFIG.service_dir):
             return await send_json(send, 404, {"ok": False, "error": "unit not found"})
+
         if action == "start":
             rc, out, err = await sysd.start_unit(unit)
         elif action == "stop":
@@ -132,6 +133,15 @@ async def app(scope, receive, send):
             rc, out, err = await sysd.restart_unit(unit)
         else:
             return await send_json(send, 404, {"ok": False, "error": "bad action"})
+
+        # Push an immediate status refresh to all SSE subscribers.
+        try:
+            sysd.trigger_status_refresh(CONFIG.service_dir)
+            # Optional: a second poke shortly after to catch final sub_state
+            # asyncio.create_task(_poke_later(1.0))
+        except Exception:
+            pass
+
         return await send_json(send, 200, {"ok": rc == 0, "code": rc, "stdout": out, "stderr": err})
 
     if method == "GET" and path == "/api/status/stream":
@@ -155,7 +165,6 @@ async def app(scope, receive, send):
         output = "cat" if mode == "cat" else "short-iso"
 
         await start_sse(send)
-        # Meta to let the client know the stream is ready.
         await send_sse(send, {"ready": True, "unit": unit, "mode": output}, event="meta")
 
         async def heartbeats():
@@ -180,10 +189,8 @@ async def app(scope, receive, send):
         try:
             await pump_logs()
         except asyncio.CancelledError:
-            # Client disconnected
             pass
         except Exception as e:
-            # Bubble one error event then close the stream
             msg = str(e)[:300]
             try:
                 await send_sse(send, {"message": msg}, event="meta")
@@ -200,6 +207,24 @@ async def app(scope, receive, send):
 
     # Fallback
     return await send_json(send, 404, {"error": "not found"})
+
+
+# Optionally: small helper for a delayed status poke to catch final states
+async def _poke_later(delay: float) -> None:
+    """
+    Trigger a status refresh after a delay.
+
+    :param delay: Seconds to wait.
+
+    :returns: None.
+    """
+    await asyncio.sleep(delay)
+    try:
+        from .config import CONFIG as _CFG
+        from . import systemd as _sysd
+        _sysd.trigger_status_refresh(_CFG.service_dir)
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
