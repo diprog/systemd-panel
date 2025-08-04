@@ -159,15 +159,17 @@ async def restart_unit(unit: str) -> tuple[int, str, str]:
     return await _run("systemctl", "restart", unit)
 
 
-async def journal_stream(unit: str, lines: int = 200):
+async def journal_stream(unit: str, lines: int = 200, output: str = "short-iso"):
     """
     Async generator streaming journalctl lines for a unit.
 
     :param unit: Unit name.
     :param lines: Number of backlog lines to include.
+    :param output: journalctl output format, "short-iso" or "cat".
 
     :returns: Async iterator of single text lines.
     """
+    fmt = "cat" if output == "cat" else "short-iso"
     proc = await asyncio.create_subprocess_exec(
         "journalctl",
         "-fu",
@@ -175,7 +177,7 @@ async def journal_stream(unit: str, lines: int = 200):
         "-n",
         str(lines),
         "-o",
-        "short-iso",
+        fmt,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )

@@ -150,9 +150,12 @@ async def app(scope, receive, send):
         if not await sysd.is_allowed_unit(unit, CONFIG.service_dir):
             return await send_json(send, 404, {"ok": False, "error": "unit not found"})
         lines = int(params.get("lines", "200"))
+        mode = params.get("mode", "short").lower()
+        output = "cat" if mode == "cat" else "short-iso"
+
         await start_sse(send)
         try:
-            async for line in sysd.journal_stream(unit, lines):
+            async for line in sysd.journal_stream(unit, lines, output=output):
                 await send_sse(send, {"line": line}, event="log")
         finally:
             await end_sse(send)
