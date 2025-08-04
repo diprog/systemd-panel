@@ -165,11 +165,53 @@ async def journal_stream(unit: str, lines: int = 200, output: str = "short-iso")
 
     :param unit: Unit name.
     :param lines: Number of backlog lines to include.
-    :param output: journalctl output format, "short-iso" or "cat".
+    :param output: "short-iso" to keep systemd preface or "cat" to emit only MESSAGE.
 
     :returns: Async iterator of single text lines.
     """
-    fmt = "cat" if output == "cat" else "short-iso"
+    if output == "cat":
+        # Жёстко берём только MESSAGE через JSON, чтобы не получить префиксы формата.
+        proc = await asyncio.create_subprocess_exec(
+            "journalctl",
+            "-fu",
+            unit,
+            "-n",
+            str(lines),
+            "-o",
+            "json",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            while True:
+                raw = await proc.stdout.readline()
+                if not raw:
+                    break
+                try:
+                    obj = json.loads(raw.decode(errors="replace"))
+                    msg = obj.get("MESSAGE", "")
+                except Exception:
+                    # Фоллбэк на случай странной строки — почти не должен срабатывать
+                    msg = raw.decode(errors="replace")
+                if msg:
+                    yield msg.rstrip("\n")
+        finally:
+            if proc.returncode is None:
+                try:
+                    proc.terminate()
+                except ProcessLookupError:
+                    pass
+                try:
+                    await asyncio.wait_for(proc.wait(), 2.0)
+                except Exception:
+                    try:
+                        proc.kill()
+                    except ProcessLookupError:
+                        pass
+        return
+
+    # Обычный путь: оставить короткую «шапку» от journalctl
+    fmt = "short-iso"
     proc = await asyncio.create_subprocess_exec(
         "journalctl",
         "-fu",
@@ -183,7 +225,6 @@ async def journal_stream(unit: str, lines: int = 200, output: str = "short-iso")
     )
     try:
         while True:
-            # Blocks until a line is available or EOF; no busy loop.
             line = await proc.stdout.readline()
             if not line:
                 break
